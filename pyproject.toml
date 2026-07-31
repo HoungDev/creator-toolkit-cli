@@ -2,6 +2,7 @@
 name = "creator-toolkit-cli"
 version = "0.1.0"
 description = "A Python command-line toolkit for creators."
+license = { text = "MIT" }
 readme = "README.md"
 requires-python = ">=3.13"
 [project.scripts]
