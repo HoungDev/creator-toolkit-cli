@@ -10,4 +10,7 @@ TEMPLATES = [
 
 
 def generate_title(keyword: str) -> str:
+    if not keyword.strip():
+        return "Please enter a keyword."
+
     return choice(TEMPLATES).format(keyword=keyword.title())
