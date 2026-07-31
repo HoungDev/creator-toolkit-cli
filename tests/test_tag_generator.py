@@ -6,3 +6,4 @@ def test_generate_tags():
 
     assert isinstance(tags, list)
     assert len(tags) == 5
+    assert all(isinstance(tag, str) for tag in tags)
