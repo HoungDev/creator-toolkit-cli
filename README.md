@@ -9,7 +9,7 @@ A modern Python command-line toolkit for creators and developers.
 - Generate titles
 - Generate tags
 - Rename image files
-- Export data to JSON
+- Command-line interface (CLI)
 
 ## Project Structure
 
