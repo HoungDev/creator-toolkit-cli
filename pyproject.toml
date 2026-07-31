@@ -1,0 +1,8 @@
+[project]
+name = "creator-toolkit-cli"
+version = "0.1.0"
+description = "A Python command-line toolkit for creators."
+readme = "README.md"
+requires-python = ">=3.13"
+[project.scripts]
+creator-toolkit = "creator_toolkit.main:main"
