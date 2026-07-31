@@ -6,3 +6,4 @@ def test_generate_title():
 
     assert isinstance(title, str)
     assert "Python" in title or "python" in title
+    assert len(title) > 0
