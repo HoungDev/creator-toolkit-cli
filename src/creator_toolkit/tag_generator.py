@@ -16,6 +16,9 @@ DEFAULT_TAGS = [
 
 
 def generate_tags(count: int = 5) -> list[str]:
+    if count <= 0:
+        return []
+    
     """Generate random tags."""
     tags = sample(DEFAULT_TAGS, k=min(count, len(DEFAULT_TAGS)))
     return sorted(tags)
