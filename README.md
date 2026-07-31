@@ -1,5 +1,7 @@
 # Creator Toolkit CLI
 
+![Python CI](https://github.com/HoungDev/creator-toolkit-cli/actions/workflows/python-ci.yml/badge.svg)
+
 A modern Python command-line toolkit for creators and developers.
 
 ## Features
