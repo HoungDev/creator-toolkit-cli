@@ -29,6 +29,19 @@ creator-toolkit-cli/
 - Git
 
 ## Installation
+## Usage
+
+Run the application:
+
+```bash
+creator-toolkit
+```
+
+Menu:
+
+1. Generate title
+2. Generate tags
+3. Rename images
 
 ```bash
 git clone https://github.com/HoungDev/creator-toolkit-cli.git
