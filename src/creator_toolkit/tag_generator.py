@@ -1,6 +1,5 @@
 from random import sample
 
-
 DEFAULT_TAGS = [
     "python",
     "automation",
@@ -16,9 +15,9 @@ DEFAULT_TAGS = [
 
 
 def generate_tags(count: int = 5) -> list[str]:
+    """Return up to ``count`` unique tags in alphabetical order."""
     if count <= 0:
         return []
-    
-    """Generate random tags."""
+
     tags = sample(DEFAULT_TAGS, k=min(count, len(DEFAULT_TAGS)))
     return sorted(tags)

@@ -4,17 +4,18 @@
 
 | Version | Supported |
 | ------- | --------- |
-| Latest | ✅ |
+| 0.1.x   | Yes       |
 
 ## Reporting a Vulnerability
 
-Please do not report security vulnerabilities through public GitHub issues.
+Please do not report security vulnerabilities through public GitHub issues. Use GitHub's
+[private vulnerability reporting](https://github.com/HoungDev/creator-toolkit-cli/security/advisories/new)
+and include:
 
-If you discover a security issue, please contact the project maintainer privately and include:
+- A description of the vulnerability.
+- Steps to reproduce it.
+- The potential impact.
+- Any suggested fix.
 
-- A description of the vulnerability
-- Steps to reproduce it
-- The potential impact
-- Any suggested fix
-
-Security reports will be reviewed as soon as possible.
+Reports will be acknowledged as soon as practical. Please allow the maintainer reasonable time
+to investigate and publish a fix before sharing details publicly.
