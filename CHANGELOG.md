@@ -10,6 +10,7 @@ All notable changes to this project are documented in this file. The format is b
 
 - Scriptable `title`, `tags`, and `rename` subcommands.
 - Safe rename previews, confirmation, recovery manifests, and an `undo` command.
+- Machine-readable JSON output for every scriptable subcommand.
 - Python 3.11–3.13 test matrix, linting, coverage, and distribution checks.
 
 ### Changed
