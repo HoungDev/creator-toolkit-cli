@@ -117,6 +117,9 @@ pytest
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the full contribution workflow. Bug reports and
 focused pull requests are welcome.
 
+Maintainers should follow the [release checklist](docs/releasing.md) and complete the
+[one-time trusted publishing setup](docs/trusted-publishing.md) before publishing a version.
+
 ## License
 
 [MIT](LICENSE) © 2026 HoungDev contributors.

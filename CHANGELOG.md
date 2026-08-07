@@ -13,6 +13,7 @@ All notable changes to this project are documented in this file. The format is b
 - Machine-readable JSON output for every scriptable subcommand.
 - Installed CLI smoke coverage on Windows, macOS, and Linux.
 - Reproducible animated README demo with real title, tag, and rename-preview workflows.
+- Manually approved Trusted Publishing workflow and release checklist for PyPI and TestPyPI.
 - Python 3.11–3.13 test matrix, linting, coverage, and distribution checks.
 
 ### Changed
