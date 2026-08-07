@@ -6,6 +6,12 @@ All notable changes to this project are documented in this file. The format is b
 
 ## [Unreleased]
 
+### Added
+
+- Reproducible title and tag generation with an optional local random seed.
+- Cross-platform-safe custom prefixes for image rename previews, applies, JSON output, and undo
+  manifests.
+
 ## [0.1.0] - 2026-08-07
 
 ### Added

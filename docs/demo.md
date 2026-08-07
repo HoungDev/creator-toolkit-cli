@@ -28,10 +28,10 @@ automation
 productivity
 tutorial
 
-$ creator-toolkit rename demo-images --dry-run
+$ creator-toolkit rename demo-images --prefix campaign --dry-run
 Planned 2 image(s).
-cover.jpg -> image_1.jpg
-thumbnail.png -> image_2.png
+cover.jpg -> campaign_1.jpg
+thumbnail.png -> campaign_2.png
 ```
 
 The final command is a preview. It does not change either sample filename.

@@ -47,10 +47,13 @@ def test_installed_cli_rename_preview_is_non_mutating(tmp_path):
     image = tmp_path / "photo.jpg"
     image.write_bytes(b"photo")
 
-    result = run_cli("rename", str(tmp_path), "--dry-run", "--json")
+    result = run_cli("rename", str(tmp_path), "--prefix", "campaign", "--dry-run", "--json")
 
     assert result.returncode == 0
     assert result.stderr == ""
     payload = json.loads(result.stdout)
     assert payload["status"] == "preview"
+    assert payload["result"]["operations"] == [
+        {"source": "photo.jpg", "destination": "campaign_1.jpg"}
+    ]
     assert image.exists()

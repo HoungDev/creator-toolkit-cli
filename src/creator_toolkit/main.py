@@ -7,6 +7,8 @@ from random import Random
 from typing import Any
 
 from creator_toolkit.rename_images import (
+    DEFAULT_RENAME_PREFIX,
+    InvalidPrefixError,
     ManifestError,
     RenameOperation,
     generate_manifest_path,
@@ -45,6 +47,11 @@ def build_parser() -> argparse.ArgumentParser:
     rename_parser.add_argument("folder")
     rename_parser.add_argument("--dry-run", action="store_true", help="preview without renaming")
     rename_parser.add_argument("--yes", action="store_true", help="apply without confirmation")
+    rename_parser.add_argument(
+        "--prefix",
+        default=DEFAULT_RENAME_PREFIX,
+        help=f"destination filename prefix (default: {DEFAULT_RENAME_PREFIX})",
+    )
     rename_parser.add_argument("--manifest", type=Path, help="custom recovery manifest path")
     rename_parser.add_argument("--json", action="store_true", help="emit machine-readable JSON")
 
@@ -118,13 +125,14 @@ def run_rename(
     assume_yes: bool,
     manifest_path: str | Path | None,
     json_output: bool,
+    prefix: str = DEFAULT_RENAME_PREFIX,
 ) -> int:
     """Preview and optionally apply an image rename plan."""
     try:
         if json_output and not (dry_run or assume_yes):
             raise UsageError("JSON rename requires --dry-run or --yes.")
 
-        operations = plan_image_renames(folder)
+        operations = plan_image_renames(folder, prefix=prefix)
         if not json_output:
             print_operations("Planned", operations)
         if dry_run:
@@ -158,7 +166,7 @@ def run_rename(
         manifest = (
             Path(manifest_path) if manifest_path is not None else generate_manifest_path(folder)
         )
-        applied = rename_images(folder, manifest_path=manifest)
+        applied = rename_images(folder, manifest_path=manifest, prefix=prefix)
         if json_output:
             _emit_success(
                 "rename",
@@ -179,6 +187,7 @@ def run_rename(
         FileNotFoundError,
         NotADirectoryError,
         FileExistsError,
+        InvalidPrefixError,
         ManifestError,
         OSError,
         RuntimeError,
@@ -254,6 +263,7 @@ def interactive_menu() -> int:
             assume_yes=False,
             manifest_path=None,
             json_output=False,
+            prefix=DEFAULT_RENAME_PREFIX,
         )
     else:
         print("Invalid option")
@@ -287,6 +297,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             assume_yes=args.yes,
             manifest_path=args.manifest,
             json_output=args.json,
+            prefix=args.prefix,
         )
     elif args.command == "undo":
         return run_undo(
