@@ -6,11 +6,22 @@ All notable changes to this project are documented in this file. The format is b
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-08-07
+
 ### Added
 
 - Reproducible title and tag generation with an optional local random seed.
 - Cross-platform-safe custom prefixes for image rename previews, applies, JSON output, and undo
   manifests.
+
+### Changed
+
+- Installation guidance now prefers the published PyPI package and links to verified release
+  artifacts.
+- Contributor onboarding and the pull request template now provide clearer scope, validation, and
+  review expectations.
+- The animated README demo is shorter, uses real CLI output, and reproduces suggestion examples
+  with a fixed seed.
 
 ## [0.1.0] - 2026-08-07
 
@@ -29,5 +40,6 @@ All notable changes to this project are documented in this file. The format is b
 - Image renaming is deterministic and avoids collisions with existing numbered files.
 - Packaging metadata and contributor documentation are more complete.
 
-[Unreleased]: https://github.com/HoungDev/creator-toolkit-cli/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/HoungDev/creator-toolkit-cli/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/HoungDev/creator-toolkit-cli/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/HoungDev/creator-toolkit-cli/releases/tag/v0.1.0
