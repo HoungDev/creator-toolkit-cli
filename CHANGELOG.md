@@ -6,6 +6,8 @@ All notable changes to this project are documented in this file. The format is b
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-08-07
+
 ### Added
 
 - Scriptable `title`, `tags`, and `rename` subcommands.
@@ -20,3 +22,6 @@ All notable changes to this project are documented in this file. The format is b
 
 - Image renaming is deterministic and avoids collisions with existing numbered files.
 - Packaging metadata and contributor documentation are more complete.
+
+[Unreleased]: https://github.com/HoungDev/creator-toolkit-cli/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/HoungDev/creator-toolkit-cli/releases/tag/v0.1.0
