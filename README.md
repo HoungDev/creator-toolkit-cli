@@ -17,6 +17,10 @@ or normalize a folder of image names from an interactive menu or scriptable subc
 ## Requirements
 
 - Python 3.11+
+- A current Windows, macOS, or Linux system
+
+See the [platform support policy](https://github.com/HoungDev/creator-toolkit-cli/blob/main/docs/platform-support.md)
+for the tested OS/Python matrix and support expectations.
 
 ## Installation
 
