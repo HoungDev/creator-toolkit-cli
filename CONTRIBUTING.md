@@ -1,20 +1,27 @@
 # Contributing
 
-Thank you for considering contributing to Creator Toolkit CLI.
+Thank you for considering a contribution to Creator Toolkit CLI.
 
-## How to contribute
-
-1. Fork the repository.
-2. Create a new branch.
-3. Make your changes.
-4. Run the tests:
+1. Fork the repository and create a focused branch.
+2. Create a virtual environment and install the development tools:
 
 ```bash
-pytest
+python -m venv .venv
+python -m pip install -e ".[dev]"
 ```
 
-5. Commit your changes.
-6. Push your branch.
-7. Open a pull request.
+3. Make your changes and add tests for new behavior.
+4. Run the same quality checks used in CI:
 
-Please keep changes clear, focused, and well tested.
+```bash
+ruff check .
+ruff format --check .
+pytest
+python -m build
+python -m twine check dist/*
+```
+
+5. Commit and push your branch, then open a pull request.
+
+Please keep changes clear, focused, and well tested. By participating, you agree to follow
+the [Code of Conduct](CODE_OF_CONDUCT.md).

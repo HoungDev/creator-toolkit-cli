@@ -9,6 +9,8 @@ __pycache__/
 
 # Testing and coverage
 .pytest_cache/
+.pytest-tmp/
+.test-tmp*/
 .coverage
 htmlcov/
 

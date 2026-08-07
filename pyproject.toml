@@ -1,9 +1,52 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "creator-toolkit-cli"
 version = "0.1.0"
-description = "A Python command-line toolkit for creators."
-license = { text = "MIT" }
+description = "A practical command-line toolkit for creator workflows."
+license = "MIT"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.11"
+authors = [{ name = "HoungDev" }]
+keywords = ["automation", "cli", "creator-tools", "productivity"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Utilities",
+]
+
+[project.optional-dependencies]
+dev = [
+    "build>=1.2.2",
+    "pip-audit>=2.9",
+    "pytest>=8.3",
+    "pytest-cov>=6.0",
+    "ruff>=0.11",
+    "twine>=6.1",
+]
+
 [project.scripts]
 creator-toolkit = "creator_toolkit.main:main"
+
+[project.urls]
+Changelog = "https://github.com/HoungDev/creator-toolkit-cli/blob/main/CHANGELOG.md"
+Issues = "https://github.com/HoungDev/creator-toolkit-cli/issues"
+Repository = "https://github.com/HoungDev/creator-toolkit-cli"
+
+[tool.pytest.ini_options]
+addopts = "--cov=creator_toolkit --cov-report=term-missing --cov-fail-under=90"
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
