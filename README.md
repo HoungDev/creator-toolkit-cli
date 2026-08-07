@@ -119,6 +119,15 @@ Run without a subcommand to use the interactive menu:
 creator-toolkit
 ```
 
+## Contributing
+
+Looking for a first contribution? Browse open
+[`good first issue`](https://github.com/HoungDev/creator-toolkit-cli/issues?q=is%3Aissue%20state%3Aopen%20label%3A%22good%20first%20issue%22)
+or [`help wanted`](https://github.com/HoungDev/creator-toolkit-cli/issues?q=is%3Aissue%20state%3Aopen%20label%3A%22help%20wanted%22)
+work, comment with your intended approach, and follow the
+[contributor guide](https://github.com/HoungDev/creator-toolkit-cli/blob/main/CONTRIBUTING.md).
+Focused documentation, testing, bug-fix, and small feature pull requests are welcome.
+
 ## Development
 
 ```bash
@@ -129,7 +138,7 @@ pytest
 ```
 
 See [CONTRIBUTING.md](https://github.com/HoungDev/creator-toolkit-cli/blob/main/CONTRIBUTING.md)
-for the full contribution workflow. Bug reports and focused pull requests are welcome.
+for setup, validation, demo generation, and pull request expectations.
 
 Maintainers should follow the
 [release checklist](https://github.com/HoungDev/creator-toolkit-cli/blob/main/docs/releasing.md)
