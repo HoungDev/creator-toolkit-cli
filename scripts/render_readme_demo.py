@@ -80,7 +80,9 @@ def _capture_scenes() -> list[tuple[str, list[Line]]]:
 
         title = _run_cli(["title", "creator workflow", "--seed", str(SEED)], cwd=workspace)
         tags = _run_cli(["tags", "--count", "3", "--seed", str(SEED)], cwd=workspace)
-        rename = _run_cli(["rename", "demo-images", "--dry-run"], cwd=workspace)
+        rename = _run_cli(
+            ["rename", "demo-images", "--prefix", "campaign", "--dry-run"], cwd=workspace
+        )
 
     return [
         (
@@ -108,7 +110,7 @@ def _capture_scenes() -> list[tuple[str, list[Line]]]:
                 ("muted", "  cover.jpg"),
                 ("muted", "  thumbnail.png"),
                 ("blank", ""),
-                ("prompt", "$ creator-toolkit rename demo-images --dry-run"),
+                ("prompt", "$ creator-toolkit rename demo-images --prefix campaign --dry-run"),
                 *(("output", line) for line in rename),
                 ("blank", ""),
                 ("success", "Preview only - no files changed."),

@@ -62,14 +62,17 @@ def test_installed_cli_rename_preview_does_not_change_files(tmp_path):
     image = tmp_path / "photo.jpg"
     image.write_bytes(b"photo")
 
-    result = run_cli("rename", str(tmp_path), "--dry-run", "--json")
+    result = run_cli("rename", str(tmp_path), "--prefix", "campaign", "--dry-run", "--json")
 
     assert_success(result)
     assert result.stderr == ""
     payload = json.loads(result.stdout)
     assert payload["status"] == "preview"
+    assert payload["result"]["operations"] == [
+        {"source": "photo.jpg", "destination": "campaign_1.jpg"}
+    ]
     assert image.read_bytes() == b"photo"
-    assert not (tmp_path / "image_1.jpg").exists()
+    assert not (tmp_path / "campaign_1.jpg").exists()
 
 
 def test_installed_cli_failure_preserves_exit_code_and_diagnostics(tmp_path):

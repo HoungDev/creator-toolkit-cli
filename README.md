@@ -25,7 +25,7 @@ or normalize a folder of image names from an interactive menu or scriptable subc
 | --- | --- | --- |
 | Draft a title | `creator workflow` | `10 Creator Workflow Tips Every Beginner Should Know` |
 | Pick three tags | `--count 3` | `automation`, `productivity`, `tutorial` |
-| Preview image renames | `cover.jpg`, `thumbnail.png` | `image_1.jpg`, `image_2.png` — no files changed |
+| Preview image renames | `--prefix campaign` | `campaign_1.jpg`, `campaign_2.png` — no files changed |
 
 See the [demo transcript and reproduction steps](https://github.com/HoungDev/creator-toolkit-cli/blob/main/docs/demo.md).
 
@@ -33,7 +33,7 @@ See the [demo transcript and reproduction steps](https://github.com/HoungDev/cre
 
 - Generate title ideas from a keyword.
 - Select unique tags from a curated list.
-- Preview, apply, and undo deterministic JPEG and PNG filename changes.
+- Preview, apply, and undo deterministic JPEG and PNG filename changes with a safe custom prefix.
 - Use automation-friendly subcommands or an interactive menu.
 
 ## Requirements
@@ -76,7 +76,7 @@ Add `--json` to any scriptable subcommand for automation-friendly output:
 ```bash
 creator-toolkit title "video editing" --seed 2026 --json
 creator-toolkit tags --count 5 --seed 2026 --json
-creator-toolkit rename ./images --dry-run --json
+creator-toolkit rename ./images --prefix campaign --dry-run --json
 ```
 
 See the [JSON output reference](https://github.com/HoungDev/creator-toolkit-cli/blob/main/docs/json-output.md)
@@ -85,28 +85,33 @@ for response schemas, exit codes, error handling, and automation examples.
 Preview changes to `.jpg`, `.jpeg`, and `.png` files without touching the directory:
 
 ```bash
-creator-toolkit rename ./images --dry-run
+creator-toolkit rename ./images --prefix campaign --dry-run
 ```
 
-Apply the displayed plan after an interactive confirmation:
+This produces names such as `campaign_1.jpg`. Omit `--prefix` to retain the default `image_1.jpg`
+format. Unsafe filename components and cross-platform reserved names are rejected before any file
+or manifest changes.
+
+Apply the displayed plan after an interactive confirmation, using the same prefix:
 
 ```bash
-creator-toolkit rename ./images
+creator-toolkit rename ./images --prefix campaign
 ```
 
 For non-interactive automation, pass `--yes`. Every applied CLI rename writes a unique JSON
 manifest in the image directory:
 
 ```bash
-creator-toolkit rename ./images --yes
+creator-toolkit rename ./images --prefix campaign --yes
 creator-toolkit undo ./images/.creator-toolkit-renames-20260807T120000Z-a1b2c3d4.json --dry-run
 creator-toolkit undo ./images/.creator-toolkit-renames-20260807T120000Z-a1b2c3d4.json
 ```
 
-The rename command orders inputs by filename and produces names such as `image_1.jpg`. Operations
-use a two-phase rename to avoid collisions and roll back when a filesystem step fails. Undo
-manifests reject path traversal and refuse to overwrite files created after the rename. Other
-files are left untouched, but a separate backup is still recommended for valuable assets.
+The rename command orders inputs by filename and uses a two-phase rename to avoid collisions and
+roll back when a filesystem step fails. Undo manifests store concrete operations, so undo does not
+need the original prefix. They reject path traversal and refuse to overwrite files created after
+the rename. Other files are left untouched, but a separate backup is still recommended for
+valuable assets.
 
 Run without a subcommand to use the interactive menu:
 

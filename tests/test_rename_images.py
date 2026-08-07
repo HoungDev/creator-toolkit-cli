@@ -4,6 +4,7 @@ from pathlib import Path
 import pytest
 
 from creator_toolkit.rename_images import (
+    InvalidPrefixError,
     ManifestError,
     plan_image_renames,
     rename_images,
@@ -27,6 +28,19 @@ def test_dry_run_returns_plan_without_changing_files(tmp_path):
     ]
     assert image.read_bytes() == b"photo"
     assert not (tmp_path / "image_1.jpg").exists()
+
+
+def test_dry_run_supports_a_custom_prefix_without_changing_files(tmp_path):
+    image = tmp_path / "photo.JPG"
+    image.write_bytes(b"photo")
+
+    operations = rename_images(tmp_path, dry_run=True, prefix="campaign")
+
+    assert [(source.name, destination.name) for source, destination in operations] == [
+        ("photo.JPG", "campaign_1.jpg")
+    ]
+    assert image.read_bytes() == b"photo"
+    assert not (tmp_path / "campaign_1.jpg").exists()
 
 
 def test_rename_images_writes_manifest_and_undoes(tmp_path):
@@ -55,6 +69,94 @@ def test_rename_images_writes_manifest_and_undoes(tmp_path):
     assert (tmp_path / "a.jpg").read_bytes() == b"a"
     assert (tmp_path / "z.PNG").read_bytes() == b"z"
     assert json.loads(manifest.read_text(encoding="utf-8"))["status"] == "undone"
+
+
+def test_custom_prefix_manifest_undoes_without_prefix_argument(tmp_path):
+    (tmp_path / "photo.jpg").write_bytes(b"photo")
+    manifest = tmp_path / "rename-manifest.json"
+
+    rename_images(tmp_path, manifest_path=manifest, prefix="campaign")
+
+    assert (tmp_path / "campaign_1.jpg").read_bytes() == b"photo"
+    payload = json.loads(manifest.read_text(encoding="utf-8"))
+    assert payload["version"] == 1
+    assert payload["operations"] == [{"source": "photo.jpg", "destination": "campaign_1.jpg"}]
+
+    undo_renames(manifest)
+
+    assert (tmp_path / "photo.jpg").read_bytes() == b"photo"
+    assert not (tmp_path / "campaign_1.jpg").exists()
+
+
+def test_custom_prefix_collision_is_detected_before_changes(tmp_path):
+    image = tmp_path / "photo.jpg"
+    image.write_bytes(b"photo")
+    (tmp_path / "campaign_1.jpg").mkdir()
+
+    with pytest.raises(FileExistsError, match="Destination already exists"):
+        rename_images(tmp_path, prefix="campaign")
+
+    assert image.read_bytes() == b"photo"
+    assert (tmp_path / "campaign_1.jpg").is_dir()
+
+
+@pytest.mark.parametrize(
+    "prefix",
+    [
+        "",
+        "   ",
+        " campaign",
+        "campaign ",
+        ".",
+        "..",
+        "folder/campaign",
+        "folder\\campaign",
+        "campaign:",
+        'campaign"',
+        "campaign|",
+        "campaign?",
+        "campaign*",
+        "campaign.",
+        "campaign\x00",
+        "CON",
+        "con.txt",
+        "PRN",
+        "AUX",
+        "NUL",
+        "COM1",
+        "LPT9",
+        "a" * 256,
+    ],
+)
+def test_invalid_prefixes_fail_before_file_or_manifest_changes(tmp_path, prefix):
+    image = tmp_path / "photo.jpg"
+    image.write_bytes(b"photo")
+    manifest = tmp_path / "manifest.json"
+
+    with pytest.raises(InvalidPrefixError, match="Prefix"):
+        rename_images(tmp_path, prefix=prefix, manifest_path=manifest)
+
+    assert image.read_bytes() == b"photo"
+    assert not manifest.exists()
+
+
+def test_unicode_prefix_is_supported_cross_platform(tmp_path):
+    image = tmp_path / "photo.PNG"
+    image.write_bytes(b"photo")
+
+    operations = plan_image_renames(tmp_path, prefix="chiến-dịch")
+
+    assert operations[0][1].name == "chiến-dịch_1.png"
+
+
+def test_prefix_must_leave_room_for_generated_filename_suffix(tmp_path):
+    image = tmp_path / "photo.jpeg"
+    image.write_bytes(b"photo")
+
+    with pytest.raises(InvalidPrefixError, match="Generated filename"):
+        plan_image_renames(tmp_path, prefix="a" * 250)
+
+    assert image.read_bytes() == b"photo"
 
 
 def test_rename_images_handles_existing_numbered_names(tmp_path):

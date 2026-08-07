@@ -6,12 +6,74 @@ from uuid import uuid4
 
 SUPPORTED_EXTENSIONS = {".jpeg", ".jpg", ".png"}
 MANIFEST_VERSION = 1
+DEFAULT_RENAME_PREFIX = "image"
+MAX_FILENAME_COMPONENT_LENGTH = 255
+
+_WINDOWS_INVALID_CHARACTERS = frozenset('<>:"/\\|?*')
+_WINDOWS_RESERVED_NAMES = {
+    "CON",
+    "PRN",
+    "AUX",
+    "NUL",
+    *(f"COM{number}" for number in range(1, 10)),
+    *(f"LPT{number}" for number in range(1, 10)),
+    "COM¹",
+    "COM²",
+    "COM³",
+    "LPT¹",
+    "LPT²",
+    "LPT³",
+}
 
 RenameOperation = tuple[Path, Path]
 
 
 class ManifestError(ValueError):
     """Raised when a rename manifest is invalid or unsafe."""
+
+
+class InvalidPrefixError(ValueError):
+    """Raised when a rename prefix is unsafe as a filename component."""
+
+
+def _component_lengths(value: str) -> tuple[int, int]:
+    try:
+        return len(value.encode("utf-8")), len(value.encode("utf-16-le")) // 2
+    except UnicodeEncodeError as error:
+        raise InvalidPrefixError("Prefix contains unsupported Unicode characters.") from error
+
+
+def _validate_component_length(value: str, *, generated: bool = False) -> None:
+    utf8_length, utf16_length = _component_lengths(value)
+    if max(utf8_length, utf16_length) <= MAX_FILENAME_COMPONENT_LENGTH:
+        return
+
+    subject = "Generated filename" if generated else "Prefix"
+    raise InvalidPrefixError(
+        f"{subject} exceeds the cross-platform filename limit of "
+        f"{MAX_FILENAME_COMPONENT_LENGTH} characters or bytes."
+    )
+
+
+def validate_rename_prefix(prefix: str) -> str:
+    """Return ``prefix`` when it is safe on Windows, macOS, and Linux."""
+    if not isinstance(prefix, str) or not prefix or not prefix.strip():
+        raise InvalidPrefixError("Prefix must not be empty.")
+    if prefix != prefix.strip():
+        raise InvalidPrefixError("Prefix must not start or end with whitespace.")
+    if prefix in {".", ".."}:
+        raise InvalidPrefixError("Prefix must be a single filename component.")
+    if prefix.endswith("."):
+        raise InvalidPrefixError("Prefix must not end with a period.")
+    if any(character in _WINDOWS_INVALID_CHARACTERS or ord(character) < 32 for character in prefix):
+        raise InvalidPrefixError("Prefix contains characters that are unsafe in filenames.")
+
+    windows_stem = prefix.split(".", maxsplit=1)[0].upper()
+    if windows_stem in _WINDOWS_RESERVED_NAMES:
+        raise InvalidPrefixError("Prefix is a reserved filename on Windows.")
+
+    _validate_component_length(prefix)
+    return prefix
 
 
 def _validate_directory(folder: str | Path) -> Path:
@@ -23,8 +85,11 @@ def _validate_directory(folder: str | Path) -> Path:
     return path
 
 
-def plan_image_renames(folder: str | Path) -> list[RenameOperation]:
+def plan_image_renames(
+    folder: str | Path, *, prefix: str = DEFAULT_RENAME_PREFIX
+) -> list[RenameOperation]:
     """Return deterministic image rename operations without changing files."""
+    prefix = validate_rename_prefix(prefix)
     path = _validate_directory(folder)
     images = sorted(
         (
@@ -34,10 +99,11 @@ def plan_image_renames(folder: str | Path) -> list[RenameOperation]:
         ),
         key=lambda item: item.name.casefold(),
     )
-    operations = [
-        (image, path / f"image_{index}{image.suffix.lower()}")
-        for index, image in enumerate(images, start=1)
-    ]
+    operations: list[RenameOperation] = []
+    for index, image in enumerate(images, start=1):
+        destination_name = f"{prefix}_{index}{image.suffix.lower()}"
+        _validate_component_length(destination_name, generated=True)
+        operations.append((image, path / destination_name))
     return [(source, destination) for source, destination in operations if source != destination]
 
 
@@ -154,10 +220,11 @@ def rename_images(
     *,
     dry_run: bool = False,
     manifest_path: str | Path | None = None,
+    prefix: str = DEFAULT_RENAME_PREFIX,
 ) -> list[RenameOperation]:
     """Plan or apply deterministic image renames with optional recovery metadata."""
     path = _validate_directory(folder)
-    operations = plan_image_renames(path)
+    operations = plan_image_renames(path, prefix=prefix)
     if dry_run or not operations:
         return operations
 

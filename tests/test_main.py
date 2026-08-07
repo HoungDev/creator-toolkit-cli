@@ -42,6 +42,17 @@ def test_rename_command_dry_run_changes_nothing(tmp_path, capsys):
     assert not list(tmp_path.glob(".creator-toolkit-renames-*.json"))
 
 
+def test_rename_command_previews_custom_prefix(tmp_path, capsys):
+    image = tmp_path / "photo.jpg"
+    image.write_bytes(b"photo")
+
+    assert main(["rename", str(tmp_path), "--prefix", "campaign", "--dry-run"]) == 0
+
+    output = capsys.readouterr().out
+    assert "photo.jpg -> campaign_1.jpg" in output
+    assert image.read_bytes() == b"photo"
+
+
 def test_rename_command_cancelled_by_default(tmp_path, monkeypatch, capsys):
     image = tmp_path / "photo.jpg"
     image.write_bytes(b"photo")
@@ -83,6 +94,19 @@ def test_rename_and_undo_commands(tmp_path, capsys):
 
     assert main(["undo", str(manifest), "--yes"]) == 0
     assert "Restored 1 image(s)." in capsys.readouterr().out
+    assert (tmp_path / "photo.jpg").read_bytes() == b"photo"
+
+
+def test_custom_prefix_apply_and_manifest_undo_commands(tmp_path, capsys):
+    (tmp_path / "photo.jpg").write_bytes(b"photo")
+
+    assert main(["rename", str(tmp_path), "--prefix", "campaign", "--yes"]) == 0
+    capsys.readouterr()
+    manifest = next(tmp_path.glob(".creator-toolkit-renames-*.json"))
+    assert (tmp_path / "campaign_1.jpg").read_bytes() == b"photo"
+
+    assert main(["undo", str(manifest), "--yes"]) == 0
+    capsys.readouterr()
     assert (tmp_path / "photo.jpg").read_bytes() == b"photo"
 
 
@@ -148,6 +172,26 @@ def test_json_rename_preview_and_runtime_error(tmp_path, capsys):
     error = json.loads(captured.err)
     assert error["command"] == "rename"
     assert error["error"]["type"] == "FileNotFoundError"
+
+
+def test_json_rename_custom_prefix_and_validation_error(tmp_path, capsys):
+    image = tmp_path / "photo.jpg"
+    image.write_bytes(b"photo")
+
+    assert main(["rename", str(tmp_path), "--prefix", "campaign", "--dry-run", "--json"]) == 0
+    preview = json.loads(capsys.readouterr().out)
+    assert preview["schema_version"] == 1
+    assert preview["result"]["operations"] == [
+        {"source": "photo.jpg", "destination": "campaign_1.jpg"}
+    ]
+
+    assert main(["rename", str(tmp_path), "--prefix", "../unsafe", "--dry-run", "--json"]) == 1
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    error = json.loads(captured.err)
+    assert error["schema_version"] == 1
+    assert error["error"]["type"] == "InvalidPrefixError"
+    assert image.read_bytes() == b"photo"
 
 
 def test_json_rename_and_undo(tmp_path, capsys):

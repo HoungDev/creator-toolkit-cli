@@ -46,6 +46,10 @@ The fields inside `result` depend on the command:
 Each operation contains `source` and `destination` filenames. Rename statuses are `preview`,
 `unchanged`, or `applied`; undo statuses are `preview` or `restored`.
 
+The optional `rename --prefix` changes destination values only, so the JSON schema remains version
+1. Applied manifests store those concrete destinations and can be undone without repeating the
+prefix.
+
 ## Reproducible generation
 
 Pass the same integer `--seed` to `title` or `tags` to reproduce the same result for the same
@@ -89,12 +93,12 @@ print(tags)
 Inspect a rename plan from PowerShell without modifying files:
 
 ```powershell
-$plan = creator-toolkit rename .\images --dry-run --json | ConvertFrom-Json
+$plan = creator-toolkit rename .\images --prefix campaign --dry-run --json | ConvertFrom-Json
 $plan.result.operations | Format-Table source, destination
 ```
 
 Apply a previously reviewed rename plan in CI:
 
 ```bash
-creator-toolkit rename ./images --yes --json > rename-result.json
+creator-toolkit rename ./images --prefix campaign --yes --json > rename-result.json
 ```
