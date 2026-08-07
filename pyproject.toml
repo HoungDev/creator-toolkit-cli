@@ -24,6 +24,9 @@ classifiers = [
 ]
 
 [project.optional-dependencies]
+demo = [
+    "Pillow>=12.0",
+]
 dev = [
     "build>=1.2.2",
     "pip-audit>=2.9",
