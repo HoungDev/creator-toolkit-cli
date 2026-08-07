@@ -1,1 +1,2 @@
-recursive-include docs *.md
+include scripts/render_readme_demo.py
+recursive-include docs *.gif *.md

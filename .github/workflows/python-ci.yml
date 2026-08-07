@@ -23,9 +23,11 @@ jobs:
           python-version: "3.13"
           cache: pip
       - name: Install project
-        run: python -m pip install --upgrade pip && python -m pip install -e ".[dev]"
+        run: python -m pip install --upgrade pip && python -m pip install -e ".[dev,demo]"
       - name: Lint and format
         run: ruff check . && ruff format --check .
+      - name: Rebuild README demo
+        run: python scripts/render_readme_demo.py --output .test-tmp-ci-demo/creator-toolkit-demo.gif
       - name: Audit dependencies
         run: python -m pip_audit
       - name: Build and inspect distributions

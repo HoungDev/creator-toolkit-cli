@@ -7,6 +7,27 @@
 A lightweight Python CLI for repeatable creator workflows. Generate content ideas and tags,
 or normalize a folder of image names from an interactive menu or scriptable subcommands.
 
+![Animated terminal demo showing title generation, tag selection, and a dry-run image rename preview](docs/assets/creator-toolkit-demo.gif)
+
+<sub>The demo uses disposable sample files. Title and tag suggestions vary during normal use.</sub>
+
+## Why Creator Toolkit?
+
+- Preview filename changes before touching a directory, then undo applied renames from a manifest.
+- Automate every scriptable workflow with stable JSON schemas and meaningful exit codes.
+- Get the same CLI behavior on current Windows, macOS, and Linux systems.
+- Keep small creator tasks local, inspectable, and easy to compose in scripts.
+
+## Real workflows
+
+| Goal | Before | Example result |
+| --- | --- | --- |
+| Draft a title | `creator workflow` | `10 Creator Workflow Tips Every Beginner Should Know` |
+| Pick three tags | `--count 3` | `automation`, `productivity`, `tutorial` |
+| Preview image renames | `cover.jpg`, `thumbnail.png` | `image_1.jpg`, `image_2.png` — no files changed |
+
+See the [demo transcript and reproduction steps](docs/demo.md).
+
 ## Features
 
 - Generate title ideas from a keyword.
