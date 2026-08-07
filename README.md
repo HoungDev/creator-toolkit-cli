@@ -1,13 +1,14 @@
 # Creator Toolkit CLI
 
 [![Python CI](https://github.com/HoungDev/creator-toolkit-cli/actions/workflows/python-ci.yml/badge.svg)](https://github.com/HoungDev/creator-toolkit-cli/actions/workflows/python-ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/creator-toolkit-cli.svg)](https://pypi.org/project/creator-toolkit-cli/)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-3776AB.svg)](https://www.python.org/)
-[![MIT License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![MIT License](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/HoungDev/creator-toolkit-cli/blob/main/LICENSE)
 
 A lightweight Python CLI for repeatable creator workflows. Generate content ideas and tags,
 or normalize a folder of image names from an interactive menu or scriptable subcommands.
 
-![Animated terminal demo showing title generation, tag selection, and a dry-run image rename preview](docs/assets/creator-toolkit-demo.gif)
+![Animated terminal demo showing title generation, tag selection, and a dry-run image rename preview](https://raw.githubusercontent.com/HoungDev/creator-toolkit-cli/main/docs/assets/creator-toolkit-demo.gif)
 
 <sub>The demo uses disposable sample files. Title and tag suggestions vary during normal use.</sub>
 
@@ -26,7 +27,7 @@ or normalize a folder of image names from an interactive menu or scriptable subc
 | Pick three tags | `--count 3` | `automation`, `productivity`, `tutorial` |
 | Preview image renames | `cover.jpg`, `thumbnail.png` | `image_1.jpg`, `image_2.png` — no files changed |
 
-See the [demo transcript and reproduction steps](docs/demo.md).
+See the [demo transcript and reproduction steps](https://github.com/HoungDev/creator-toolkit-cli/blob/main/docs/demo.md).
 
 ## Features
 
@@ -45,13 +46,14 @@ for the tested OS/Python matrix and support expectations.
 
 ## Installation
 
-Install from source in an isolated environment:
+Install the latest stable release from PyPI:
 
 ```bash
-git clone https://github.com/HoungDev/creator-toolkit-cli.git
-cd creator-toolkit-cli
-python -m pip install .
+python -m pip install creator-toolkit-cli
 ```
+
+Release notes and verified distribution hashes are available in the
+[latest GitHub release](https://github.com/HoungDev/creator-toolkit-cli/releases/latest).
 
 ## Usage
 
@@ -114,12 +116,15 @@ ruff format --check .
 pytest
 ```
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for the full contribution workflow. Bug reports and
-focused pull requests are welcome.
+See [CONTRIBUTING.md](https://github.com/HoungDev/creator-toolkit-cli/blob/main/CONTRIBUTING.md)
+for the full contribution workflow. Bug reports and focused pull requests are welcome.
 
-Maintainers should follow the [release checklist](docs/releasing.md) and complete the
-[one-time trusted publishing setup](docs/trusted-publishing.md) before publishing a version.
+Maintainers should follow the
+[release checklist](https://github.com/HoungDev/creator-toolkit-cli/blob/main/docs/releasing.md)
+and complete the
+[one-time trusted publishing setup](https://github.com/HoungDev/creator-toolkit-cli/blob/main/docs/trusted-publishing.md)
+before publishing a version.
 
 ## License
 
-[MIT](LICENSE) © 2026 HoungDev contributors.
+[MIT](https://github.com/HoungDev/creator-toolkit-cli/blob/main/LICENSE) © 2026 HoungDev contributors.
