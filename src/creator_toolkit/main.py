@@ -3,6 +3,7 @@ import json
 import sys
 from collections.abc import Sequence
 from pathlib import Path
+from random import Random
 from typing import Any
 
 from creator_toolkit.rename_images import (
@@ -32,10 +33,12 @@ def build_parser() -> argparse.ArgumentParser:
 
     title_parser = subparsers.add_parser("title", help="generate a title from a keyword")
     title_parser.add_argument("keyword")
+    title_parser.add_argument("--seed", type=int, help="make generated output reproducible")
     title_parser.add_argument("--json", action="store_true", help="emit machine-readable JSON")
 
     tags_parser = subparsers.add_parser("tags", help="generate a set of tags")
     tags_parser.add_argument("--count", type=int, default=5)
+    tags_parser.add_argument("--seed", type=int, help="make generated output reproducible")
     tags_parser.add_argument("--json", action="store_true", help="emit machine-readable JSON")
 
     rename_parser = subparsers.add_parser("rename", help="safely rename images in a directory")
@@ -264,13 +267,15 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.command is None:
         return interactive_menu()
     if args.command == "title":
-        title = generate_title(args.keyword)
+        rng = Random(args.seed) if args.seed is not None else None
+        title = generate_title(args.keyword, rng=rng)
         if args.json:
             _emit_success("title", "generated", {"title": title})
         else:
             print(title)
     elif args.command == "tags":
-        tags = generate_tags(args.count)
+        rng = Random(args.seed) if args.seed is not None else None
+        tags = generate_tags(args.count, rng=rng)
         if args.json:
             _emit_success("tags", "generated", {"count": len(tags), "tags": tags})
         else:

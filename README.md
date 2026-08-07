@@ -10,7 +10,7 @@ or normalize a folder of image names from an interactive menu or scriptable subc
 
 ![Animated terminal demo showing title generation, tag selection, and a dry-run image rename preview](https://raw.githubusercontent.com/HoungDev/creator-toolkit-cli/main/docs/assets/creator-toolkit-demo.gif)
 
-<sub>The demo uses disposable sample files. Title and tag suggestions vary during normal use.</sub>
+<sub>The demo uses disposable sample files and a fixed seed for reproducible suggestions.</sub>
 
 ## Why Creator Toolkit?
 
@@ -64,11 +64,18 @@ creator-toolkit title "video editing"
 creator-toolkit tags --count 5
 ```
 
+Pass the same integer seed to reproduce a title or tag set; omit it for fresh suggestions:
+
+```bash
+creator-toolkit title "video editing" --seed 2026
+creator-toolkit tags --count 5 --seed 2026
+```
+
 Add `--json` to any scriptable subcommand for automation-friendly output:
 
 ```bash
-creator-toolkit title "video editing" --json
-creator-toolkit tags --count 5 --json
+creator-toolkit title "video editing" --seed 2026 --json
+creator-toolkit tags --count 5 --seed 2026 --json
 creator-toolkit rename ./images --dry-run --json
 ```
 

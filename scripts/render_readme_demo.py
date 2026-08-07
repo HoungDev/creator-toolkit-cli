@@ -49,17 +49,14 @@ def _font(size: int, *, bold: bool = False) -> ImageFont.FreeTypeFont | ImageFon
 
 
 def _run_cli(arguments: list[str], *, cwd: Path) -> list[str]:
-    """Run the current source tree with a stable seed and return its output lines."""
+    """Run the current source tree and return its output lines."""
     environment = os.environ.copy()
     current_pythonpath = environment.get("PYTHONPATH")
     environment["PYTHONPATH"] = os.pathsep.join(
         value for value in (str(SOURCE), current_pythonpath) if value
     )
     runner = (
-        "import random, sys; "
-        f"random.seed({SEED}); "
-        "from creator_toolkit.main import main; "
-        "raise SystemExit(main(sys.argv[1:]))"
+        "import sys; from creator_toolkit.main import main; raise SystemExit(main(sys.argv[1:]))"
     )
     result = subprocess.run(
         [sys.executable, "-c", runner, *arguments],
@@ -81,15 +78,15 @@ def _capture_scenes() -> list[tuple[str, list[Line]]]:
         (images / "cover.jpg").write_bytes(b"demo")
         (images / "thumbnail.png").write_bytes(b"demo")
 
-        title = _run_cli(["title", "creator workflow"], cwd=workspace)
-        tags = _run_cli(["tags", "--count", "3"], cwd=workspace)
+        title = _run_cli(["title", "creator workflow", "--seed", str(SEED)], cwd=workspace)
+        tags = _run_cli(["tags", "--count", "3", "--seed", str(SEED)], cwd=workspace)
         rename = _run_cli(["rename", "demo-images", "--dry-run"], cwd=workspace)
 
     return [
         (
             "TITLE IDEAS",
             [
-                ("prompt", '$ creator-toolkit title "creator workflow"'),
+                ("prompt", '$ creator-toolkit title "creator workflow" --seed 2026'),
                 *(("output", line) for line in title),
                 ("blank", ""),
                 ("note", "Turn one keyword into a ready-to-refine headline."),
@@ -98,7 +95,7 @@ def _capture_scenes() -> list[tuple[str, list[Line]]]:
         (
             "CURATED TAGS",
             [
-                ("prompt", "$ creator-toolkit tags --count 3"),
+                ("prompt", "$ creator-toolkit tags --count 3 --seed 2026"),
                 *(("output", line) for line in tags),
                 ("blank", ""),
                 ("note", "Unique suggestions, sorted for predictable output."),

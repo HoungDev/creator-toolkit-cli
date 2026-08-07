@@ -46,6 +46,17 @@ The fields inside `result` depend on the command:
 Each operation contains `source` and `destination` filenames. Rename statuses are `preview`,
 `unchanged`, or `applied`; undo statuses are `preview` or `restored`.
 
+## Reproducible generation
+
+Pass the same integer `--seed` to `title` or `tags` to reproduce the same result for the same
+input. The seed changes generated values only: the JSON envelope and schema version remain the
+same. Omit `--seed` to keep the normal randomized behavior.
+
+```bash
+creator-toolkit title "creator workflow" --seed 2026 --json
+creator-toolkit tags --count 3 --seed 2026 --json
+```
+
 ## Safe non-interactive use
 
 JSON mode never prompts. `rename` and `undo` therefore require either `--dry-run` or `--yes` when
@@ -66,7 +77,7 @@ import json
 import subprocess
 
 result = subprocess.run(
-    ["creator-toolkit", "tags", "--count", "3", "--json"],
+    ["creator-toolkit", "tags", "--count", "3", "--seed", "2026", "--json"],
     check=True,
     capture_output=True,
     text=True,

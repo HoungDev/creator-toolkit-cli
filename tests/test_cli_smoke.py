@@ -39,17 +39,23 @@ def test_installed_cli_help_lists_commands():
 
 
 def test_installed_cli_generates_title_and_tags_json():
-    title_result = run_cli("title", "creator workflow", "--json")
+    title_result = run_cli("title", "creator workflow", "--seed", "2026", "--json")
     assert_success(title_result)
     title = json.loads(title_result.stdout)
     assert title["command"] == "title"
     assert "Creator Workflow" in title["result"]["title"]
+    assert run_cli("title", "creator workflow", "--seed", "2026", "--json").stdout == (
+        title_result.stdout
+    )
 
-    tags_result = run_cli("tags", "--count", "3", "--json")
+    tags_result = run_cli("tags", "--count", "3", "--seed", "2026", "--json")
     assert_success(tags_result)
     tags = json.loads(tags_result.stdout)
     assert tags["command"] == "tags"
     assert tags["result"]["count"] == 3
+    assert run_cli("tags", "--count", "3", "--seed", "2026", "--json").stdout == (
+        tags_result.stdout
+    )
 
 
 def test_installed_cli_rename_preview_does_not_change_files(tmp_path):
