@@ -13,7 +13,7 @@ def run_cli(*arguments):
 
 
 def test_installed_cli_emits_valid_title_json():
-    result = run_cli("title", "creator workflow", "--json")
+    result = run_cli("title", "creator workflow", "--seed", "2026", "--json")
 
     assert result.returncode == 0
     assert result.stderr == ""
@@ -21,6 +21,15 @@ def test_installed_cli_emits_valid_title_json():
     assert payload["command"] == "title"
     assert payload["ok"] is True
     assert "Creator Workflow" in payload["result"]["title"]
+
+
+def test_cli_rejects_invalid_seed_with_argparse_diagnostics():
+    result = run_cli("tags", "--seed", "not-an-integer")
+
+    assert result.returncode == 2
+    assert result.stdout == ""
+    assert "--seed" in result.stderr
+    assert "invalid int value" in result.stderr
 
 
 def test_installed_cli_emits_json_error_to_stderr(tmp_path):

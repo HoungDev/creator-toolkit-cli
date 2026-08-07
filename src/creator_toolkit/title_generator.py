@@ -1,4 +1,4 @@
-from random import choice
+from random import Random, choice
 
 TEMPLATES = [
     "10 {keyword} Tips Every Beginner Should Know",
@@ -9,9 +9,10 @@ TEMPLATES = [
 ]
 
 
-def generate_title(keyword: str) -> str:
+def generate_title(keyword: str, *, rng: Random | None = None) -> str:
     """Generate a title from a keyword."""
     if not keyword.strip():
         return "Please enter a keyword."
 
-    return choice(TEMPLATES).format(keyword=keyword.title())
+    chooser = choice if rng is None else rng.choice
+    return chooser(TEMPLATES).format(keyword=keyword.title())

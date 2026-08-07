@@ -1,4 +1,4 @@
-from random import sample
+from random import Random, sample
 
 DEFAULT_TAGS = [
     "python",
@@ -14,10 +14,11 @@ DEFAULT_TAGS = [
 ]
 
 
-def generate_tags(count: int = 5) -> list[str]:
+def generate_tags(count: int = 5, *, rng: Random | None = None) -> list[str]:
     """Return up to ``count`` unique tags in alphabetical order."""
     if count <= 0:
         return []
 
-    tags = sample(DEFAULT_TAGS, k=min(count, len(DEFAULT_TAGS)))
+    sampler = sample if rng is None else rng.sample
+    tags = sampler(DEFAULT_TAGS, k=min(count, len(DEFAULT_TAGS)))
     return sorted(tags)

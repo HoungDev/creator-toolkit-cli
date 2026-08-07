@@ -13,6 +13,18 @@ def test_tags_command(capsys):
     assert len(capsys.readouterr().out.splitlines()) == 2
 
 
+def test_seeded_title_and_tags_commands_are_reproducible(capsys):
+    assert main(["title", "creator workflow", "--seed", "2026"]) == 0
+    first_title = capsys.readouterr().out
+    assert main(["title", "creator workflow", "--seed", "2026"]) == 0
+    assert capsys.readouterr().out == first_title
+
+    assert main(["tags", "--count", "3", "--seed", "2026"]) == 0
+    first_tags = capsys.readouterr().out
+    assert main(["tags", "--count", "3", "--seed", "2026"]) == 0
+    assert capsys.readouterr().out == first_tags
+
+
 def test_rename_command_reports_missing_folder(tmp_path, capsys):
     assert main(["rename", str(tmp_path / "missing"), "--dry-run"]) == 1
     assert "Folder not found" in capsys.readouterr().err
@@ -96,14 +108,15 @@ def test_undo_command_reports_invalid_manifest(tmp_path, capsys):
 
 
 def test_title_and_tags_json(capsys):
-    assert main(["title", "python", "--json"]) == 0
+    assert main(["title", "python", "--seed", "2026", "--json"]) == 0
     title_payload = json.loads(capsys.readouterr().out)
     assert title_payload["schema_version"] == 1
     assert title_payload["command"] == "title"
     assert title_payload["result"]["title"]
 
-    assert main(["tags", "--count", "2", "--json"]) == 0
+    assert main(["tags", "--count", "2", "--seed", "2026", "--json"]) == 0
     tags_payload = json.loads(capsys.readouterr().out)
+    assert tags_payload["schema_version"] == 1
     assert tags_payload["command"] == "tags"
     assert tags_payload["result"]["count"] == 2
     assert len(tags_payload["result"]["tags"]) == 2
