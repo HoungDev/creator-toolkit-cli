@@ -17,6 +17,10 @@ DEFAULT_OUTPUT = ROOT / "docs" / "assets" / "creator-toolkit-demo.gif"
 WIDTH = 900
 HEIGHT = 506
 SEED = 2026
+TYPE_STEPS = 5
+TYPE_DURATION_MS = 90
+REVEAL_DURATION_MS = 180
+FINAL_HOLD_MS = 1400
 
 BACKGROUND = "#0d1117"
 PANEL = "#161b22"
@@ -28,6 +32,7 @@ BLUE = "#58a6ff"
 PURPLE = "#a371f7"
 
 Line = tuple[str, str]
+Timeline = tuple[list[list[Line]], list[int]]
 
 
 def _font(size: int, *, bold: bool = False) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
@@ -119,6 +124,38 @@ def _capture_scenes() -> list[tuple[str, list[Line]]]:
     ]
 
 
+def _build_timeline(lines: list[Line]) -> Timeline:
+    """Reveal a captured command and its output as a compact terminal animation."""
+    prompt_index = next(index for index, (kind, _) in enumerate(lines) if kind == "prompt")
+    prelude = lines[:prompt_index]
+    command = lines[prompt_index][1]
+    tail = lines[prompt_index + 1 :]
+
+    states: list[list[Line]] = []
+    durations: list[int] = []
+    checkpoints = sorted(
+        {
+            max(1, min(len(command), round(len(command) * step / TYPE_STEPS)))
+            for step in range(1, TYPE_STEPS + 1)
+        }
+    )
+    for checkpoint in checkpoints:
+        cursor = " ▌" if checkpoint < len(command) else ""
+        states.append([*prelude, ("prompt", command[:checkpoint] + cursor)])
+        durations.append(TYPE_DURATION_MS)
+
+    durations[-1] = REVEAL_DURATION_MS
+    visible = [*prelude, ("prompt", command)]
+    for line in tail:
+        visible.append(line)
+        if line[0] != "blank":
+            states.append(visible.copy())
+            durations.append(REVEAL_DURATION_MS)
+
+    durations[-1] = FINAL_HOLD_MS
+    return states, durations
+
+
 def _draw_frame(label: str, lines: list[Line], step: int, total: int) -> Image.Image:
     """Draw one terminal-style frame."""
     image = Image.new("RGB", (WIDTH, HEIGHT), BACKGROUND)
@@ -162,10 +199,13 @@ def _draw_frame(label: str, lines: list[Line], step: int, total: int) -> Image.I
 def render(output: Path) -> None:
     """Capture CLI output and write the optimized looping GIF."""
     scenes = _capture_scenes()
-    frames = [
-        _draw_frame(label, lines, step=index, total=len(scenes))
-        for index, (label, lines) in enumerate(scenes, start=1)
-    ]
+    frames: list[Image.Image] = []
+    durations: list[int] = []
+    for index, (label, lines) in enumerate(scenes, start=1):
+        states, scene_durations = _build_timeline(lines)
+        frames.extend(_draw_frame(label, state, step=index, total=len(scenes)) for state in states)
+        durations.extend(scene_durations)
+
     palette_frames = [
         frame.quantize(colors=64, method=Image.Quantize.MEDIANCUT) for frame in frames
     ]
@@ -174,7 +214,7 @@ def render(output: Path) -> None:
         output,
         save_all=True,
         append_images=palette_frames[1:],
-        duration=[2200, 2200, 3200],
+        duration=durations,
         loop=0,
         optimize=True,
         disposal=2,
