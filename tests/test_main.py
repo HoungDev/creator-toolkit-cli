@@ -1,3 +1,5 @@
+import json
+
 from creator_toolkit.main import interactive_menu, main
 
 
@@ -13,7 +15,7 @@ def test_tags_command(capsys):
 
 def test_rename_command_reports_missing_folder(tmp_path, capsys):
     assert main(["rename", str(tmp_path / "missing"), "--dry-run"]) == 1
-    assert "Folder not found" in capsys.readouterr().out
+    assert "Folder not found" in capsys.readouterr().err
 
 
 def test_rename_command_dry_run_changes_nothing(tmp_path, capsys):
@@ -90,7 +92,67 @@ def test_undo_command_reports_invalid_manifest(tmp_path, capsys):
     manifest.write_text("not json", encoding="utf-8")
 
     assert main(["undo", str(manifest), "--yes"]) == 1
-    assert "not valid JSON" in capsys.readouterr().out
+    assert "not valid JSON" in capsys.readouterr().err
+
+
+def test_title_and_tags_json(capsys):
+    assert main(["title", "python", "--json"]) == 0
+    title_payload = json.loads(capsys.readouterr().out)
+    assert title_payload["schema_version"] == 1
+    assert title_payload["command"] == "title"
+    assert title_payload["result"]["title"]
+
+    assert main(["tags", "--count", "2", "--json"]) == 0
+    tags_payload = json.loads(capsys.readouterr().out)
+    assert tags_payload["command"] == "tags"
+    assert tags_payload["result"]["count"] == 2
+    assert len(tags_payload["result"]["tags"]) == 2
+
+
+def test_json_rename_requires_explicit_mode(tmp_path, capsys):
+    assert main(["rename", str(tmp_path), "--json"]) == 2
+
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    payload = json.loads(captured.err)
+    assert payload["ok"] is False
+    assert payload["error"]["type"] == "UsageError"
+
+
+def test_json_rename_preview_and_runtime_error(tmp_path, capsys):
+    (tmp_path / "photo.jpg").write_bytes(b"photo")
+
+    assert main(["rename", str(tmp_path), "--dry-run", "--json"]) == 0
+    preview = json.loads(capsys.readouterr().out)
+    assert preview["status"] == "preview"
+    assert preview["result"]["operations"] == [
+        {"source": "photo.jpg", "destination": "image_1.jpg"}
+    ]
+
+    assert main(["rename", str(tmp_path / "missing"), "--dry-run", "--json"]) == 1
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    error = json.loads(captured.err)
+    assert error["command"] == "rename"
+    assert error["error"]["type"] == "FileNotFoundError"
+
+
+def test_json_rename_and_undo(tmp_path, capsys):
+    (tmp_path / "photo.jpg").write_bytes(b"photo")
+
+    assert main(["rename", str(tmp_path), "--yes", "--json"]) == 0
+    renamed = json.loads(capsys.readouterr().out)
+    assert renamed["status"] == "applied"
+    manifest = renamed["result"]["manifest"]
+
+    assert main(["undo", manifest, "--dry-run", "--json"]) == 0
+    preview = json.loads(capsys.readouterr().out)
+    assert preview["status"] == "preview"
+
+    assert main(["undo", manifest, "--yes", "--json"]) == 0
+    restored = json.loads(capsys.readouterr().out)
+    assert restored["status"] == "restored"
+    assert (tmp_path / "photo.jpg").exists()
 
 
 def test_interactive_title(monkeypatch, capsys):
@@ -123,7 +185,7 @@ def test_interactive_rename_error(tmp_path, monkeypatch, capsys):
     monkeypatch.setattr("builtins.input", lambda _prompt: next(answers))
 
     assert interactive_menu() == 1
-    assert "Folder not found" in capsys.readouterr().out
+    assert "Folder not found" in capsys.readouterr().err
 
 
 def test_interactive_invalid_option(monkeypatch, capsys):

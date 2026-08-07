@@ -37,6 +37,7 @@ creator-toolkit = "creator_toolkit.main:main"
 
 [project.urls]
 Changelog = "https://github.com/HoungDev/creator-toolkit-cli/blob/main/CHANGELOG.md"
+Documentation = "https://github.com/HoungDev/creator-toolkit-cli/tree/main/docs"
 Issues = "https://github.com/HoungDev/creator-toolkit-cli/issues"
 Repository = "https://github.com/HoungDev/creator-toolkit-cli"
 

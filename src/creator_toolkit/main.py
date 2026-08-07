@@ -1,6 +1,9 @@
 import argparse
+import json
+import sys
 from collections.abc import Sequence
 from pathlib import Path
+from typing import Any
 
 from creator_toolkit.rename_images import (
     ManifestError,
@@ -13,6 +16,12 @@ from creator_toolkit.rename_images import (
 from creator_toolkit.tag_generator import generate_tags
 from creator_toolkit.title_generator import generate_title
 
+JSON_SCHEMA_VERSION = 1
+
+
+class UsageError(ValueError):
+    """Raised when a safe non-interactive invocation is incomplete."""
+
 
 def build_parser() -> argparse.ArgumentParser:
     """Build the command-line parser."""
@@ -20,22 +29,69 @@ def build_parser() -> argparse.ArgumentParser:
         prog="creator-toolkit", description="Tools for creator workflows"
     )
     subparsers = parser.add_subparsers(dest="command")
+
     title_parser = subparsers.add_parser("title", help="generate a title from a keyword")
     title_parser.add_argument("keyword")
+    title_parser.add_argument("--json", action="store_true", help="emit machine-readable JSON")
+
     tags_parser = subparsers.add_parser("tags", help="generate a set of tags")
     tags_parser.add_argument("--count", type=int, default=5)
+    tags_parser.add_argument("--json", action="store_true", help="emit machine-readable JSON")
 
     rename_parser = subparsers.add_parser("rename", help="safely rename images in a directory")
     rename_parser.add_argument("folder")
     rename_parser.add_argument("--dry-run", action="store_true", help="preview without renaming")
     rename_parser.add_argument("--yes", action="store_true", help="apply without confirmation")
     rename_parser.add_argument("--manifest", type=Path, help="custom recovery manifest path")
+    rename_parser.add_argument("--json", action="store_true", help="emit machine-readable JSON")
 
     undo_parser = subparsers.add_parser("undo", help="reverse an applied rename manifest")
     undo_parser.add_argument("manifest", type=Path)
     undo_parser.add_argument("--dry-run", action="store_true", help="preview without restoring")
     undo_parser.add_argument("--yes", action="store_true", help="restore without confirmation")
+    undo_parser.add_argument("--json", action="store_true", help="emit machine-readable JSON")
     return parser
+
+
+def _operation_records(operations: list[RenameOperation]) -> list[dict[str, str]]:
+    return [
+        {"source": source.name, "destination": destination.name}
+        for source, destination in operations
+    ]
+
+
+def _emit_json(payload: dict[str, Any], *, error: bool = False) -> None:
+    stream = sys.stderr if error else sys.stdout
+    print(json.dumps(payload, sort_keys=True), file=stream)
+
+
+def _emit_success(command: str, status: str, result: dict[str, Any]) -> None:
+    _emit_json(
+        {
+            "schema_version": JSON_SCHEMA_VERSION,
+            "command": command,
+            "ok": True,
+            "status": status,
+            "result": result,
+        }
+    )
+
+
+def _report_error(command: str, error: Exception, *, json_output: bool, exit_code: int) -> int:
+    if json_output:
+        _emit_json(
+            {
+                "schema_version": JSON_SCHEMA_VERSION,
+                "command": command,
+                "ok": False,
+                "status": "error",
+                "error": {"type": type(error).__name__, "message": str(error)},
+            },
+            error=True,
+        )
+    else:
+        print(error, file=sys.stderr)
+    return exit_code
 
 
 def print_operations(label: str, operations: list[RenameOperation]) -> None:
@@ -58,12 +114,39 @@ def run_rename(
     dry_run: bool,
     assume_yes: bool,
     manifest_path: str | Path | None,
+    json_output: bool,
 ) -> int:
     """Preview and optionally apply an image rename plan."""
     try:
+        if json_output and not (dry_run or assume_yes):
+            raise UsageError("JSON rename requires --dry-run or --yes.")
+
         operations = plan_image_renames(folder)
-        print_operations("Planned", operations)
-        if dry_run or not operations:
+        if not json_output:
+            print_operations("Planned", operations)
+        if dry_run:
+            if json_output:
+                _emit_success(
+                    "rename",
+                    "preview",
+                    {
+                        "directory": str(Path(folder).resolve()),
+                        "manifest": None,
+                        "operations": _operation_records(operations),
+                    },
+                )
+            return 0
+        if not operations:
+            if json_output:
+                _emit_success(
+                    "rename",
+                    "unchanged",
+                    {
+                        "directory": str(Path(folder).resolve()),
+                        "manifest": None,
+                        "operations": [],
+                    },
+                )
             return 0
         if not assume_yes and not _confirmed("Apply these changes? [y/N]: "):
             print("Cancelled; no files were changed.")
@@ -73,9 +156,22 @@ def run_rename(
             Path(manifest_path) if manifest_path is not None else generate_manifest_path(folder)
         )
         applied = rename_images(folder, manifest_path=manifest)
-        print_operations("Renamed", applied)
-        print(f"Undo manifest: {manifest}")
+        if json_output:
+            _emit_success(
+                "rename",
+                "applied",
+                {
+                    "directory": str(Path(folder).resolve()),
+                    "manifest": str(manifest.resolve()),
+                    "operations": _operation_records(applied),
+                },
+            )
+        else:
+            print_operations("Renamed", applied)
+            print(f"Undo manifest: {manifest}")
         return 0
+    except UsageError as error:
+        return _report_error("rename", error, json_output=json_output, exit_code=2)
     except (
         FileNotFoundError,
         NotADirectoryError,
@@ -84,23 +180,48 @@ def run_rename(
         OSError,
         RuntimeError,
     ) as error:
-        print(error)
-        return 1
+        return _report_error("rename", error, json_output=json_output, exit_code=1)
 
 
-def run_undo(manifest: str | Path, *, dry_run: bool, assume_yes: bool) -> int:
+def run_undo(manifest: str | Path, *, dry_run: bool, assume_yes: bool, json_output: bool) -> int:
     """Preview and optionally reverse a rename manifest."""
     try:
+        if json_output and not (dry_run or assume_yes):
+            raise UsageError("JSON undo requires --dry-run or --yes.")
+
         operations = undo_renames(manifest, dry_run=True)
-        print_operations("Planned restore of", operations)
+        if not json_output:
+            print_operations("Planned restore of", operations)
         if dry_run:
+            if json_output:
+                _emit_success(
+                    "undo",
+                    "preview",
+                    {
+                        "manifest": str(Path(manifest).resolve()),
+                        "operations": _operation_records(operations),
+                    },
+                )
             return 0
         if not assume_yes and not _confirmed("Restore these filenames? [y/N]: "):
             print("Cancelled; no files were changed.")
             return 0
+
         restored = undo_renames(manifest)
-        print_operations("Restored", restored)
+        if json_output:
+            _emit_success(
+                "undo",
+                "restored",
+                {
+                    "manifest": str(Path(manifest).resolve()),
+                    "operations": _operation_records(restored),
+                },
+            )
+        else:
+            print_operations("Restored", restored)
         return 0
+    except UsageError as error:
+        return _report_error("undo", error, json_output=json_output, exit_code=2)
     except (
         FileNotFoundError,
         NotADirectoryError,
@@ -109,8 +230,7 @@ def run_undo(manifest: str | Path, *, dry_run: bool, assume_yes: bool) -> int:
         OSError,
         RuntimeError,
     ) as error:
-        print(error)
-        return 1
+        return _report_error("undo", error, json_output=json_output, exit_code=1)
 
 
 def interactive_menu() -> int:
@@ -126,7 +246,11 @@ def interactive_menu() -> int:
         print(generate_tags())
     elif choice == "3":
         return run_rename(
-            input("Enter folder path: "), dry_run=False, assume_yes=False, manifest_path=None
+            input("Enter folder path: "),
+            dry_run=False,
+            assume_yes=False,
+            manifest_path=None,
+            json_output=False,
         )
     else:
         print("Invalid option")
@@ -140,18 +264,32 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.command is None:
         return interactive_menu()
     if args.command == "title":
-        print(generate_title(args.keyword))
+        title = generate_title(args.keyword)
+        if args.json:
+            _emit_success("title", "generated", {"title": title})
+        else:
+            print(title)
     elif args.command == "tags":
-        print("\n".join(generate_tags(args.count)))
+        tags = generate_tags(args.count)
+        if args.json:
+            _emit_success("tags", "generated", {"count": len(tags), "tags": tags})
+        else:
+            print("\n".join(tags))
     elif args.command == "rename":
         return run_rename(
             args.folder,
             dry_run=args.dry_run,
             assume_yes=args.yes,
             manifest_path=args.manifest,
+            json_output=args.json,
         )
     elif args.command == "undo":
-        return run_undo(args.manifest, dry_run=args.dry_run, assume_yes=args.yes)
+        return run_undo(
+            args.manifest,
+            dry_run=args.dry_run,
+            assume_yes=args.yes,
+            json_output=args.json,
+        )
     return 0
 
 

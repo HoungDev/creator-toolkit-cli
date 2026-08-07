@@ -37,6 +37,17 @@ creator-toolkit title "video editing"
 creator-toolkit tags --count 5
 ```
 
+Add `--json` to any scriptable subcommand for automation-friendly output:
+
+```bash
+creator-toolkit title "video editing" --json
+creator-toolkit tags --count 5 --json
+creator-toolkit rename ./images --dry-run --json
+```
+
+See the [JSON output reference](https://github.com/HoungDev/creator-toolkit-cli/blob/main/docs/json-output.md)
+for response schemas, exit codes, error handling, and automation examples.
+
 Preview changes to `.jpg`, `.jpeg`, and `.png` files without touching the directory:
 
 ```bash
