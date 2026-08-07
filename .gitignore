@@ -13,6 +13,7 @@ __pycache__/
 .test-tmp*/
 .coverage
 htmlcov/
+.creator-toolkit-renames-*.json
 
 # Build files
 build/

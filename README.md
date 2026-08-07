@@ -11,7 +11,7 @@ or normalize a folder of image names from an interactive menu or scriptable subc
 
 - Generate title ideas from a keyword.
 - Select unique tags from a curated list.
-- Rename JPEG and PNG files deterministically without filename collisions.
+- Preview, apply, and undo deterministic JPEG and PNG filename changes.
 - Use automation-friendly subcommands or an interactive menu.
 
 ## Requirements
@@ -37,14 +37,31 @@ creator-toolkit title "video editing"
 creator-toolkit tags --count 5
 ```
 
-Rename `.jpg`, `.jpeg`, and `.png` files in a directory:
+Preview changes to `.jpg`, `.jpeg`, and `.png` files without touching the directory:
+
+```bash
+creator-toolkit rename ./images --dry-run
+```
+
+Apply the displayed plan after an interactive confirmation:
 
 ```bash
 creator-toolkit rename ./images
 ```
 
-The rename command orders inputs by filename and safely produces names such as `image_1.jpg`.
-Other files are left untouched. Commit or back up valuable assets before any bulk rename.
+For non-interactive automation, pass `--yes`. Every applied CLI rename writes a unique JSON
+manifest in the image directory:
+
+```bash
+creator-toolkit rename ./images --yes
+creator-toolkit undo ./images/.creator-toolkit-renames-20260807T120000Z-a1b2c3d4.json --dry-run
+creator-toolkit undo ./images/.creator-toolkit-renames-20260807T120000Z-a1b2c3d4.json
+```
+
+The rename command orders inputs by filename and produces names such as `image_1.jpg`. Operations
+use a two-phase rename to avoid collisions and roll back when a filesystem step fails. Undo
+manifests reject path traversal and refuse to overwrite files created after the rename. Other
+files are left untouched, but a separate backup is still recommended for valuable assets.
 
 Run without a subcommand to use the interactive menu:
 
