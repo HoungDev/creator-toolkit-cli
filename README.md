@@ -8,9 +8,9 @@
 A lightweight Python CLI for repeatable creator workflows. Generate content ideas and tags,
 or normalize a folder of image names from an interactive menu or scriptable subcommands.
 
-![Animated terminal demo showing title generation, tag selection, and a dry-run image rename preview](https://raw.githubusercontent.com/HoungDev/creator-toolkit-cli/main/docs/assets/creator-toolkit-demo.gif)
+![Short terminal animation showing title generation, tag selection, and a dry-run image rename preview](docs/assets/creator-toolkit-demo.gif)
 
-<sub>The demo uses disposable sample files and a fixed seed for reproducible suggestions.</sub>
+<sub>This seven-second loop uses real CLI output, disposable sample files, and a fixed seed for reproducible suggestions.</sub>
 
 ## Why Creator Toolkit?
 

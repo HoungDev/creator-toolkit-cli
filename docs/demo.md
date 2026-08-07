@@ -2,7 +2,9 @@
 
 The animated README demo is generated from the current Creator Toolkit source. It calls the same
 CLI entry logic shown to users, creates two non-sensitive sample image files in a temporary
-directory, and removes that directory when rendering finishes.
+directory, and removes that directory when rendering finishes. The renderer types each captured
+command in short steps, reveals its real output line by line, and completes the loop in about seven
+seconds.
 
 ## Rebuild the asset
 
