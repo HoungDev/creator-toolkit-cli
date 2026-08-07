@@ -33,10 +33,10 @@ def test_interactive_title(monkeypatch, capsys):
 
 def test_interactive_tags(monkeypatch, capsys):
     monkeypatch.setattr("builtins.input", lambda _prompt: "2")
+    monkeypatch.setattr("creator_toolkit.main.generate_tags", lambda: ["tag-one", "tag-two"])
 
     assert interactive_menu() == 0
-    output = capsys.readouterr().out
-    assert "python" in output or "automation" in output
+    assert "['tag-one', 'tag-two']" in capsys.readouterr().out
 
 
 def test_interactive_rename_success(tmp_path, monkeypatch, capsys):
