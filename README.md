@@ -60,6 +60,7 @@ Release notes and verified distribution hashes are available in the
 Generate a title or tags:
 
 ```bash
+creator-toolkit --version
 creator-toolkit title "video editing"
 creator-toolkit tags --count 5
 ```

@@ -2,6 +2,7 @@ import json
 import shutil
 import subprocess
 import sys
+from importlib import metadata
 from pathlib import Path
 
 
@@ -34,8 +35,17 @@ def test_installed_cli_help_lists_commands():
 
     assert_success(result)
     assert result.stderr == ""
+    assert "--version" in result.stdout
     for command in ("title", "tags", "rename", "undo"):
         assert command in result.stdout
+
+
+def test_installed_cli_version_reports_package_name_and_version():
+    result = run_cli("--version")
+
+    assert_success(result)
+    assert result.stderr == ""
+    assert result.stdout == f"creator-toolkit-cli {metadata.version('creator-toolkit-cli')}\n"
 
 
 def test_installed_cli_generates_title_and_tags_json():
