@@ -1,4 +1,7 @@
 import json
+from importlib import metadata
+
+import pytest
 
 from creator_toolkit.main import interactive_menu, main
 
@@ -11,6 +14,16 @@ def test_title_command(capsys):
 def test_tags_command(capsys):
     assert main(["tags", "--count", "2"]) == 0
     assert len(capsys.readouterr().out.splitlines()) == 2
+
+
+def test_version_command_uses_installed_package_metadata(capsys):
+    with pytest.raises(SystemExit) as exit_info:
+        main(["--version"])
+
+    assert exit_info.value.code == 0
+    assert capsys.readouterr().out == (
+        f"creator-toolkit-cli {metadata.version('creator-toolkit-cli')}\n"
+    )
 
 
 def test_seeded_title_and_tags_commands_are_reproducible(capsys):

@@ -2,6 +2,7 @@ import argparse
 import json
 import sys
 from collections.abc import Sequence
+from importlib import metadata
 from pathlib import Path
 from random import Random
 from typing import Any
@@ -20,6 +21,7 @@ from creator_toolkit.tag_generator import generate_tags
 from creator_toolkit.title_generator import generate_title
 
 JSON_SCHEMA_VERSION = 1
+PACKAGE_NAME = "creator-toolkit-cli"
 
 
 class UsageError(ValueError):
@@ -30,6 +32,12 @@ def build_parser() -> argparse.ArgumentParser:
     """Build the command-line parser."""
     parser = argparse.ArgumentParser(
         prog="creator-toolkit", description="Tools for creator workflows"
+    )
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=f"{PACKAGE_NAME} {metadata.version(PACKAGE_NAME)}",
+        help="show the installed package version and exit",
     )
     subparsers = parser.add_subparsers(dest="command")
 
